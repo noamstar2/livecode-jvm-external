@@ -561,7 +561,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 {
 	// Check to see if we have the right number of parameters.
 	//
-	if (p_argument_count > 2)
+	if (p_argument_count < 1 || p_argument_count > 2)
 	{
 		*r_pass = False;
 		*r_error = True;
