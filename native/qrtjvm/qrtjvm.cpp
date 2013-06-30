@@ -24,11 +24,9 @@
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
 #include <JavaVM/jni.h>
-#endif
-
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/resource.h>
+#endif
 
 #include "external.h"
 
@@ -38,7 +36,10 @@ static int s_jvm_status = 0;
 static char * s_jvm_exception;
 static char * s_ext_exception;
 
-//static HMODULE s_rtl_handle = 0;
+#ifdef __WINDOWS__
+static HMODULE s_rtl_handle = 0;
+#endif
+
 static JavaVM * s_rt_jvm = NULL;
 static JNIEnv * s_rt_env = NULL;
 
@@ -643,23 +644,73 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 				}
 			}
 		}
+    
+		// Now create the Java VM with our arguments
+		//
+		JNI_GetDefaultJavaVMInitArgs(&vm_args);
+		jint jvm_result = -1;
+		jvm_result = JNI_CreateJavaVM(&s_rt_jvm, (void**)&s_rt_env, &vm_args);
+		if (jvm_result < 0) {
+			*r_pass = False;
+			*r_error = True;
+			*r_result = strdup("qrtjvmerr: could not create Java VM");
+			return;
+		}
+
+	#else
+
+		// Read the runtime library path and attempt to load
+		//
+		char *jvm_rtlibpath = p_arguments[1];
+		s_rtl_handle = LoadLibrary(jvm_rtlibpath);
+		if (s_rtl_handle == NULL) {
+			*r_pass = False;
+			*r_error = True;
+			*r_result = strdup("qrtjvmerr: unable to load JVM library from <runtime path>");
+			return;
+		}
+
+		// Pointers to required functions
+		//
+
+		// 1. Fetch the function pointer for getting default arguments
+		typedef jint (JNICALL P_JNI_GetDefaultJavaVMInitArgs_t)(void *args);
+		P_JNI_GetDefaultJavaVMInitArgs_t* pfnGetDefaultJavaVMInitArgs = NULL;
+		pfnGetDefaultJavaVMInitArgs = (P_JNI_GetDefaultJavaVMInitArgs_t*) GetProcAddress(s_rtl_handle, "JNI_GetDefaultJavaVMInitArgs");
+		if (pfnGetDefaultJavaVMInitArgs == NULL) {
+			*r_pass = False;
+			*r_error = True;
+			*r_result = strdup("qrtjvmerr: invalid JVM library from <runtime path> (missing JNI_GetDefaultJavaVMInitArgs ProcAddress)");
+			return;
+		}
+
+		// 2. Fetch the function pointer for creating the VM
+		typedef jint (JNICALL P_JNI_CreateJavaVM_t)(JavaVM **pvm, JNIEnv **penv, void *args);
+		P_JNI_CreateJavaVM_t* pfnCreateJavaVM = NULL;
+		pfnCreateJavaVM = (P_JNI_CreateJavaVM_t*) GetProcAddress(s_rtl_handle, "JNI_CreateJavaVM");
+		if (pfnCreateJavaVM == NULL) {
+			*r_pass = False;
+			*r_error = True;
+			*r_result = strdup("qrtjvmerr: invalid JVM library from <runtime path> (missing JNI_CreateJavaVM ProcAddress)");
+			return;
+		}
+
+		// Now create the Java VM with our arguments
+		//
+		pfnGetDefaultJavaVMInitArgs(&vm_args);
+		jint jvm_result = -1;
+		jvm_result = pfnCreateJavaVM(&s_rt_jvm, &s_rt_env, &vm_args);
+		if (jvm_result < 0) {
+			*r_pass = False;
+			*r_error = True;
+			*r_result = strdup("qrtjvmerr: could not create Java VM");
+			return;
+		}
 
 	#endif
-    
-	// Now create the Java VM with our arguments
-	//
-	JNI_GetDefaultJavaVMInitArgs(&vm_args);
-	jint jvm_result = -1;
-	jvm_result = JNI_CreateJavaVM(&s_rt_jvm, (void**)&s_rt_env, &vm_args);
-	if (jvm_result < 0) {
-		*r_pass = False;
-		*r_error = True;
-		*r_result = strdup("qrtjvmerr: could not create Java VM");
-		return;
-	}
-    
+
 	s_jvm_status = 1;  // loaded but not initialized
-    
+
 	// Next load our runtime miscellanea and ExternalHost class
 	//
 	Bool t_success;
