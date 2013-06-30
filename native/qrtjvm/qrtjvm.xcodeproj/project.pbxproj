@@ -1,0 +1,287 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D512C8EF177A20FA00C4FCA7 /* external.c in Sources */ = {isa = PBXBuildFile; fileRef = D512C8ED177A20FA00C4FCA7 /* external.c */; };
+		D5384ECF1778E89300C49FCA /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5384ECE1778E89300C49FCA /* CoreFoundation.framework */; };
+		D5384ED51778E89300C49FCA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D5384ED31778E89300C49FCA /* InfoPlist.strings */; };
+		D5384EDD1778E9FC00C49FCA /* JavaVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5384EDC1778E9FC00C49FCA /* JavaVM.framework */; };
+		D5384EE01778EAB800C49FCA /* qrtjvm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5384EDE1778EAB800C49FCA /* qrtjvm.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D512C8ED177A20FA00C4FCA7 /* external.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = external.c; sourceTree = "<group>"; };
+		D512C8EE177A20FA00C4FCA7 /* external.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = external.h; sourceTree = "<group>"; };
+		D5384ECB1778E89300C49FCA /* qrtjvm.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = qrtjvm.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5384ECE1778E89300C49FCA /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		D5384ED21778E89300C49FCA /* qrtjvm-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "qrtjvm-Info.plist"; sourceTree = "<group>"; };
+		D5384ED41778E89300C49FCA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		D5384ED61778E89300C49FCA /* qrtjvm-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "qrtjvm-Prefix.pch"; sourceTree = "<group>"; };
+		D5384EDC1778E9FC00C49FCA /* JavaVM.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaVM.framework; path = System/Library/Frameworks/JavaVM.framework; sourceTree = SDKROOT; };
+		D5384EDE1778EAB800C49FCA /* qrtjvm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qrtjvm.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		D5384EDF1778EAB800C49FCA /* qrtjvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qrtjvm.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5384EC81778E89300C49FCA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5384EDD1778E9FC00C49FCA /* JavaVM.framework in Frameworks */,
+				D5384ECF1778E89300C49FCA /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D5384EC21778E89300C49FCA = {
+			isa = PBXGroup;
+			children = (
+				D5384EDE1778EAB800C49FCA /* qrtjvm.cpp */,
+				D5384EDF1778EAB800C49FCA /* qrtjvm.h */,
+				D512C8ED177A20FA00C4FCA7 /* external.c */,
+				D512C8EE177A20FA00C4FCA7 /* external.h */,
+				D5384ED01778E89300C49FCA /* qrtjvm */,
+				D5384ECD1778E89300C49FCA /* Frameworks */,
+				D5384ECC1778E89300C49FCA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D5384ECC1778E89300C49FCA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5384ECB1778E89300C49FCA /* qrtjvm.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5384ECD1778E89300C49FCA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D5384ECE1778E89300C49FCA /* CoreFoundation.framework */,
+				D5384EDC1778E9FC00C49FCA /* JavaVM.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D5384ED01778E89300C49FCA /* qrtjvm */ = {
+			isa = PBXGroup;
+			children = (
+				D5384ED11778E89300C49FCA /* Supporting Files */,
+			);
+			path = qrtjvm;
+			sourceTree = "<group>";
+		};
+		D5384ED11778E89300C49FCA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				D5384ED21778E89300C49FCA /* qrtjvm-Info.plist */,
+				D5384ED31778E89300C49FCA /* InfoPlist.strings */,
+				D5384ED61778E89300C49FCA /* qrtjvm-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D5384ECA1778E89300C49FCA /* qrtjvm */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5384ED91778E89300C49FCA /* Build configuration list for PBXNativeTarget "qrtjvm" */;
+			buildPhases = (
+				D5384EC71778E89300C49FCA /* Sources */,
+				D5384EC81778E89300C49FCA /* Frameworks */,
+				D5384EC91778E89300C49FCA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = qrtjvm;
+			productName = qrtjvm;
+			productReference = D5384ECB1778E89300C49FCA /* qrtjvm.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5384EC31778E89300C49FCA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = "Quartam Software";
+			};
+			buildConfigurationList = D5384EC61778E89300C49FCA /* Build configuration list for PBXProject "qrtjvm" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D5384EC21778E89300C49FCA;
+			productRefGroup = D5384ECC1778E89300C49FCA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5384ECA1778E89300C49FCA /* qrtjvm */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D5384EC91778E89300C49FCA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5384ED51778E89300C49FCA /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5384EC71778E89300C49FCA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5384EE01778EAB800C49FCA /* qrtjvm.cpp in Sources */,
+				D512C8EF177A20FA00C4FCA7 /* external.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		D5384ED31778E89300C49FCA /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D5384ED41778E89300C49FCA /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		D5384ED71778E89300C49FCA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = 4.0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx10.4;
+				VALID_ARCHS = i386;
+				"VALID_ARCHS[sdk=*]" = i386;
+			};
+			name = Debug;
+		};
+		D5384ED81778E89300C49FCA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = 4.0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				SDKROOT = macosx10.4;
+				VALID_ARCHS = i386;
+				"VALID_ARCHS[sdk=*]" = i386;
+			};
+			name = Release;
+		};
+		D5384EDA1778E89300C49FCA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "qrtjvm/qrtjvm-Prefix.pch";
+				INFOPLIST_FILE = "qrtjvm/qrtjvm-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Debug;
+		};
+		D5384EDB1778E89300C49FCA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "qrtjvm/qrtjvm-Prefix.pch";
+				INFOPLIST_FILE = "qrtjvm/qrtjvm-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5384EC61778E89300C49FCA /* Build configuration list for PBXProject "qrtjvm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5384ED71778E89300C49FCA /* Debug */,
+				D5384ED81778E89300C49FCA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5384ED91778E89300C49FCA /* Build configuration list for PBXNativeTarget "qrtjvm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5384EDA1778E89300C49FCA /* Debug */,
+				D5384EDB1778E89300C49FCA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5384EC31778E89300C49FCA /* Project object */;
+}
