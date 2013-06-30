@@ -536,6 +536,7 @@ Bool loadexternalhost() {
 		{ "externalShowImageById", "(Ljava/lang/String;J)I", (void *)&externalShowImageById_impl },
 	};
 	s_rt_env->RegisterNatives(s_eh_class, externalMethods, 19);
+	return True;
 }
 
 void unloadexternalhost() {
