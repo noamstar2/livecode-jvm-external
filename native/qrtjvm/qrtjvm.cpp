@@ -92,22 +92,22 @@ char *jstring2cstring(JNIEnv *p_env, jstring p_jstring) {
 	return t_cstring;
 }
 
-ExternalString jxstring2rxstring(JNIEnv *p_env, jobject p_jxstring) {
+ExternalString jxstring2lcxstring(JNIEnv *p_env, jobject p_jxstring) {
 	jint t_length = p_env->CallIntMethod(p_jxstring, s_rt_externalstring_getlength_MID);
 	jbyteArray t_bytes = (jbyteArray) p_env->CallObjectMethod(p_jxstring, s_rt_externalstring_getbytes_MID);
-	ExternalString t_rxstring;
-	t_rxstring.length = (int) t_length;
-	t_rxstring.buffer = (char *)malloc(t_length);
-	jbyte *t_buffer = (jbyte *)t_rxstring.buffer;
+	ExternalString t_lcxstring;
+	t_lcxstring.length = (int) t_length;
+	t_lcxstring.buffer = (char *)malloc(t_length);
+	jbyte *t_buffer = (jbyte *)t_lcxstring.buffer;
 	p_env->GetByteArrayRegion(t_bytes, 0, t_length, t_buffer);
     //	p_env->DeleteLocalRef(t_bytes);
-	return t_rxstring;
+	return t_lcxstring;
 }
 
-jobject rxstring2jxstring(JNIEnv *p_env, ExternalString p_rxstring) {
-	jsize t_length = p_rxstring.length;
+jobject lcxstring2jxstring(JNIEnv *p_env, ExternalString p_lcxstring) {
+	jsize t_length = p_lcxstring.length;
 	jbyteArray t_bytes = p_env->NewByteArray(t_length);
-	jbyte *t_buffer = (jbyte *)p_rxstring.buffer;
+	jbyte *t_buffer = (jbyte *)p_lcxstring.buffer;
 	if (t_bytes != NULL) {
 		p_env->SetByteArrayRegion(t_bytes, 0, t_length, t_buffer);
 		jobject t_jxstring = p_env->NewObject(s_rt_externalstring_class, s_rt_externalstring_init_MID, t_bytes);
@@ -141,7 +141,7 @@ Bool check4exception(JNIEnv *p_env) {
 }
 
 //-----------------------------------------------------------------------------
-// PART 1: Callback function implementations as the glue between JVM and REV
+// PART 1: Callback function implementations as glue between JVM and LiveCode
 //-----------------------------------------------------------------------------
 
 jint JNICALL externalSendCardMessage_impl(JNIEnv *p_env, jobject p_self, jstring p_message) {
@@ -223,7 +223,7 @@ jobject JNICALL externalGetVariableEx_impl(JNIEnv *p_env, jobject p_self, jstrin
 	int t_success;
 	GetVariableEx(t_name, t_key, &t_value, &t_success);
 	if (t_success == EXTERNAL_SUCCESS) {
-		t_result = rxstring2jxstring(p_env, t_value);
+		t_result = lcxstring2jxstring(p_env, t_value);
 	}
 	// cleanup and return to JVM
 	free(t_name);
@@ -234,7 +234,7 @@ jint JNICALL externalSetVariableEx_impl(JNIEnv *p_env, jobject p_self, jstring p
 	char *t_name = jstring2cstring(p_env, p_name);
 	char *t_key = jstring2cstring(p_env, p_key);
 	ExternalString t_value;
-	t_value = jxstring2rxstring(p_env,p_value);
+	t_value = jxstring2lcxstring(p_env,p_value);
 	int t_success;
 	SetVariableEx(t_name, t_key, &t_value, &t_success);
 	// cleanup and return to JVM
@@ -252,17 +252,17 @@ jobject JNICALL externalGetArray_impl(JNIEnv *p_env, jobject p_self, jstring p_n
 		int t_element_count = 0;
 		GetArray(t_name, &t_element_count, NULL, NULL, &t_success);
 		if (t_success == EXTERNAL_SUCCESS) {
-			ExternalString *t_rev_values;
-			t_rev_values = new ExternalString[t_element_count];
-			char **t_rev_keys;
-			t_rev_keys = new char *[t_element_count];
-			GetArray(t_name, &t_element_count, t_rev_values, t_rev_keys, &t_success);
+			ExternalString *t_lc_values;
+			t_lc_values = new ExternalString[t_element_count];
+			char **t_lc_keys;
+			t_lc_keys = new char *[t_element_count];
+			GetArray(t_name, &t_element_count, t_lc_values, t_lc_keys, &t_success);
 			if (t_success == EXTERNAL_SUCCESS) {
 				for (int t_index = 0; t_index < t_element_count; t_index++) {
-					ExternalString t_rev_value = t_rev_values[t_index];
-					char *t_rev_key = t_rev_keys[t_index];
-					jobject t_jni_value = rxstring2jxstring(p_env, t_rev_value);
-					jstring t_jni_key = p_env->NewStringUTF(t_rev_key);
+					ExternalString t_lc_value = t_lc_values[t_index];
+					char *t_lc_key = t_lc_keys[t_index];
+					jobject t_jni_value = lcxstring2jxstring(p_env, t_lc_value);
+					jstring t_jni_key = p_env->NewStringUTF(t_lc_key);
 					jobject t_ignored = p_env->CallObjectMethod(t_map_object, s_rt_hashmap_put_MID, t_jni_key, t_jni_value);
 					// cleanup jni references
 					p_env->DeleteLocalRef(t_jni_value);
@@ -270,9 +270,9 @@ jobject JNICALL externalGetArray_impl(JNIEnv *p_env, jobject p_self, jstring p_n
 					p_env->DeleteLocalRef(t_ignored);
 				}
 			}
-			// cleanup rev array copies
-			delete[] t_rev_values;
-			delete[] t_rev_keys;
+			// cleanup lc array copies
+			delete[] t_lc_values;
+			delete[] t_lc_keys;
 		}
 	}
 	// cleanup and return to JVM
@@ -283,27 +283,27 @@ jobject JNICALL externalGetArray_impl(JNIEnv *p_env, jobject p_self, jstring p_n
 jint JNICALL externalSetArray_impl(JNIEnv *p_env, jobject p_self, jstring p_name, jint p_count, jobjectArray p_values, jobjectArray p_keys) {
 	char *t_name = jstring2cstring(p_env, p_name);
 	int t_element_count = (int) p_count;
-	ExternalString *t_rev_values;
-	t_rev_values = new ExternalString[t_element_count];
-	char **t_rev_keys;
-	t_rev_keys = new char *[t_element_count];
+	ExternalString *t_lc_values;
+	t_lc_values = new ExternalString[t_element_count];
+	char **t_lc_keys;
+	t_lc_keys = new char *[t_element_count];
 	for (int t_index = 0; t_index < t_element_count; t_index++) {
 		jobject t_jni_value = p_env->GetObjectArrayElement(p_values, t_index);
-		ExternalString t_rev_value;
-		t_rev_value = jxstring2rxstring(p_env, t_jni_value);
-		t_rev_values[t_index] = t_rev_value;
+		ExternalString t_lc_value;
+		t_lc_value = jxstring2lcxstring(p_env, t_jni_value);
+		t_lc_values[t_index] = t_lc_value;
 		jstring t_jni_key = (jstring)p_env->GetObjectArrayElement(p_keys, t_index);
-		t_rev_keys[t_index] = jstring2cstring(p_env, t_jni_key);
+		t_lc_keys[t_index] = jstring2cstring(p_env, t_jni_key);
 		// cleanup jni references
 		p_env->DeleteLocalRef(t_jni_value);
 		p_env->DeleteLocalRef(t_jni_key);
 	}
 	int t_success;
-	SetArray(t_name, t_element_count, t_rev_values, t_rev_keys, &t_success);
+	SetArray(t_name, t_element_count, t_lc_values, t_lc_keys, &t_success);
 	// cleanup and return to JVM
 	free(t_name);
-	delete[] t_rev_values;
-	delete[] t_rev_keys;
+	delete[] t_lc_values;
+	delete[] t_lc_keys;
 	return t_success;
 }
 
@@ -560,7 +560,7 @@ void unloadexternalhost(JNIEnv *p_env) {
 }
 
 //-----------------------------------------------------------------------------
-// PART 3: External function implementations as the glue between REV and JVM
+// PART 3: External function implementations as glue between LiveCode and JVM
 //-----------------------------------------------------------------------------
 
 // Function:
@@ -656,7 +656,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 									setenv("JAVA_JVM_VERSION", (char*)pathToTargetJVM,1);
 							}
 						}
-                        CFRelease(TargetJavaVM);
+						CFRelease(TargetJavaVM);
 					}
 				}
 			}
