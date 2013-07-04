@@ -16,10 +16,6 @@
  along with [qrtjvm].  If not see <http://www.gnu.org/licenses/>.  */
 
 
-#ifdef __APPLE__
-	#define TARGET_PLATFORM_MACOS_X
-#endif
-
 #if defined(TARGET_PLATFORM_LINUX)
 	#include <jni.h>
 	#include <dlfcn.h>
