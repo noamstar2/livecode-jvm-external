@@ -536,6 +536,20 @@ Bool loadexternalhost(JNIEnv *p_env) {
 		{ "externalShowImageById", "(Ljava/lang/String;J)I", (void *)&externalShowImageById_impl },
 	};
 	p_env->RegisterNatives(s_eh_class, externalMethods, 19);
+    
+	// Finally load our ExternalHost Instance
+	s_eh_object = p_env->CallStaticObjectMethod(s_eh_class, s_eh_getInstance_MID);
+	if (s_eh_object == NULL) {
+		s_ext_exception = "qrtjvmerr: could not create ExternalHost instance object";
+		return False;
+	}
+	s_eh_object = p_env->NewGlobalRef(s_eh_object);
+	if (s_eh_object == NULL) {
+		s_ext_exception = "qrtjvmerr: could not create ExternalHost global object reference";
+		return False;
+	}
+
+	// If we got here it means there were no errors
 	return True;
 }
 
@@ -731,22 +745,9 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 		*r_result = strdup(s_ext_exception);
 		return;
 	}
-    
-	// Finally load our ExternalHost Instance
-	s_eh_object = t_env->CallStaticObjectMethod(s_eh_class, s_eh_getInstance_MID);
-	if (s_eh_object == NULL) {
-		*r_pass = False;
-		*r_error = True;
-		*r_result = strdup("qrtjvmerr: could not create ExternalHost instance object");
-		return;
-	}
-	s_eh_object = t_env->NewGlobalRef(s_eh_object);
-	if (s_eh_object == NULL) {
-		*r_pass = False;
-		*r_error = True;
-		*r_result = strdup("qrtjvmerr: could not create ExternalHost global object reference");
-		return;
-	}
+	
+	// Update our internal status
+	//
 	s_jvm_status = 2;  // fully loaded
     
 	// If we got to here it means there were no errors
