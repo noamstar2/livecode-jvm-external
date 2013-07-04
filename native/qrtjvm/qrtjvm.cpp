@@ -16,27 +16,36 @@
  along with [qrtjvm].  If not see <http://www.gnu.org/licenses/>.  */
 
 
-#ifdef __WINDOWS__
-#include <windows.h>
-#include <jni.h>
+#ifdef __APPLE__
+	#define TARGET_PLATFORM_MACOS_X
 #endif
 
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-#include <JavaVM/jni.h>
-#include <sys/stat.h>
-#include <sys/resource.h>
+#if defined(TARGET_PLATFORM_LINUX)
+	#include <jni.h>
+	#include <dlfcn.h>
+	#define DLOPEN(dynlib) dlopen(dynlib, RTLD_NOW)
+	#define DLSYM dlsym
+	#define HMODULE void *
+#elif defined(TARGET_PLATFORM_WINDOWS)
+	#include <jni.h>
+	#include <windows.h>
+	#define DLOPEN(dynlib) LoadLibrary(dynlib)
+	#define DLSYM GetProcAddress
+#elif defined(TARGET_PLATFORM_MACOS_X)
+	#include <JavaVM/jni.h>
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <sys/stat.h>
+	#include <sys/resource.h>
 #endif
 
 #include "external.h"
-
 #include "qrtjvm.h"
 
 static int s_jvm_status = 0;
 static char * s_jvm_exception;
 static char * s_ext_exception;
 
-#ifdef __WINDOWS__
+#if defined(TARGET_PLATFORM_WINDOWS) || defined(TARGET_PLATFORM_LINUX)
 static HMODULE s_rtl_handle = 0;
 #endif
 
@@ -616,7 +625,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 	//
 	JNIEnv * t_env;
 
-	#ifdef __APPLE__
+	#if defined(TARGET_PLATFORM_MACOS_X)
 
 		CFStringRef targetJVM = CFSTR("1.5");
 		CFBundleRef JavaVMBundle;
@@ -678,7 +687,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 		// Read the runtime library path and attempt to load
 		//
 		char *jvm_rtlibpath = p_arguments[1];
-		s_rtl_handle = LoadLibrary(jvm_rtlibpath);
+		s_rtl_handle = DLOPEN(jvm_rtlibpath);
 		if (s_rtl_handle == NULL) {
 			*r_pass = False;
 			*r_error = True;
@@ -689,7 +698,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 		// Fetch the function pointer for creating the VM
 		typedef jint (JNICALL P_JNI_CreateJavaVM_t)(JavaVM **pvm, JNIEnv **penv, void *args);
 		P_JNI_CreateJavaVM_t* pfnCreateJavaVM = NULL;
-		pfnCreateJavaVM = (P_JNI_CreateJavaVM_t*) GetProcAddress(s_rtl_handle, "JNI_CreateJavaVM");
+		pfnCreateJavaVM = (P_JNI_CreateJavaVM_t*) DLSYM(s_rtl_handle, "JNI_CreateJavaVM");
 		if (pfnCreateJavaVM == NULL) {
 			*r_pass = False;
 			*r_error = True;
