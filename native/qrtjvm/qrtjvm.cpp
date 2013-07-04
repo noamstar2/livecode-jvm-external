@@ -664,7 +664,6 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
     
 		// Now create the Java VM with our arguments
 		//
-		JNI_GetDefaultJavaVMInitArgs(&vm_args);
 		jint jvm_result = -1;
 		jvm_result = JNI_CreateJavaVM(&s_rt_jvm, (void**)&t_env, &vm_args);
 		if (jvm_result < 0) {
@@ -687,21 +686,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 			return;
 		}
 
-		// Pointers to required functions
-		//
-
-		// 1. Fetch the function pointer for getting default arguments
-		typedef jint (JNICALL P_JNI_GetDefaultJavaVMInitArgs_t)(void *args);
-		P_JNI_GetDefaultJavaVMInitArgs_t* pfnGetDefaultJavaVMInitArgs = NULL;
-		pfnGetDefaultJavaVMInitArgs = (P_JNI_GetDefaultJavaVMInitArgs_t*) GetProcAddress(s_rtl_handle, "JNI_GetDefaultJavaVMInitArgs");
-		if (pfnGetDefaultJavaVMInitArgs == NULL) {
-			*r_pass = False;
-			*r_error = True;
-			*r_result = strdup("qrtjvmerr: invalid JVM library from <runtime path> (missing JNI_GetDefaultJavaVMInitArgs ProcAddress)");
-			return;
-		}
-
-		// 2. Fetch the function pointer for creating the VM
+		// Fetch the function pointer for creating the VM
 		typedef jint (JNICALL P_JNI_CreateJavaVM_t)(JavaVM **pvm, JNIEnv **penv, void *args);
 		P_JNI_CreateJavaVM_t* pfnCreateJavaVM = NULL;
 		pfnCreateJavaVM = (P_JNI_CreateJavaVM_t*) GetProcAddress(s_rtl_handle, "JNI_CreateJavaVM");
@@ -714,7 +699,6 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 
 		// Now create the Java VM with our arguments
 		//
-		pfnGetDefaultJavaVMInitArgs(&vm_args);
 		jint jvm_result = -1;
 		jvm_result = pfnCreateJavaVM(&s_rt_jvm, &t_env, &vm_args);
 		if (jvm_result < 0) {
