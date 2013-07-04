@@ -1001,7 +1001,7 @@ void qrtJVM_UnloadXlib(char *p_arguments[], int p_argument_count, char **r_resul
 	JNIEnv * t_env;
 	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
-	// Now go ahead and try to load the external library into the jvm
+	// Now go ahead and try to unload the external library from the jvm
 	//
 	jstring t_xlibpath = t_env->NewStringUTF(p_arguments[0]);
 	t_env->CallVoidMethod(s_eh_object, s_eh_unloadExternalLibrary_MID, t_xlibpath);
