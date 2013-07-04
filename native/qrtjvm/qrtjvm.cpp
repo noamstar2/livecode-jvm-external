@@ -41,7 +41,6 @@ static HMODULE s_rtl_handle = 0;
 #endif
 
 static JavaVM * s_rt_jvm = NULL;
-static JNIEnv * s_rt_env = NULL;
 
 static jclass s_rt_externalstring_class = 0;
 static jmethodID s_rt_externalstring_init_MID = 0;
@@ -89,7 +88,7 @@ char *jstring2cstring(JNIEnv *p_env, jstring p_jstring) {
 	unsigned int t_cstring_length = p_env->GetStringLength(p_jstring);
 	char *t_cstring;
 	t_cstring = (char *)malloc(t_cstring_length + 1);
-	s_rt_env->GetStringUTFRegion(p_jstring, 0, t_cstring_length, t_cstring);
+	p_env->GetStringUTFRegion(p_jstring, 0, t_cstring_length, t_cstring);
 	return t_cstring;
 }
 
@@ -118,21 +117,21 @@ jobject rxstring2jxstring(JNIEnv *p_env, ExternalString p_rxstring) {
 	return NULL;
 }
 
-Bool check4exception() {
+Bool check4exception(JNIEnv *p_env) {
 	// an exception may have occured - if so throw it as a C++ exception
-	jthrowable t_env_exception = s_rt_env->ExceptionOccurred();
+	jthrowable t_env_exception = p_env->ExceptionOccurred();
 	if (t_env_exception != NULL) {
-		s_rt_env->ExceptionDescribe();
-		s_rt_env->ExceptionClear();
-		jstring t_env_error = (jstring) s_rt_env->CallStaticObjectMethod(s_eh_class, s_eh_getExceptionText_MID, t_env_exception);
-		jthrowable t_eh_exception = s_rt_env->ExceptionOccurred();
+		p_env->ExceptionDescribe();
+		p_env->ExceptionClear();
+		jstring t_env_error = (jstring) p_env->CallStaticObjectMethod(s_eh_class, s_eh_getExceptionText_MID, t_env_exception);
+		jthrowable t_eh_exception = p_env->ExceptionOccurred();
 		if (t_eh_exception != NULL) {
-			s_rt_env->ExceptionClear();
+			p_env->ExceptionClear();
 			s_ext_exception = "qrtjvmerr: an internal exception occurred (no error message available)";
 			return False;
 		}
 		s_ext_exception = "qrtjvmerr: an exception occurred (use qrtJVM_ExceptionText to examine the stacktrace)";
-		s_jvm_exception = jstring2cstring(s_rt_env, t_env_error);
+		s_jvm_exception = jstring2cstring(p_env, t_env_error);
 		return False;
 	} else {
 	    s_jvm_exception = "";
@@ -417,43 +416,43 @@ jint JNICALL externalShowImageById_impl(JNIEnv *p_env, jobject p_self, jstring p
 // PART 2: Extracted runtime miscellanea and external host - setup and teardown
 //-----------------------------------------------------------------------------
 
-Bool loadruntimemisc() {
-	s_rt_externalstring_class = s_rt_env->FindClass("Lcom/quartam/external/ExternalString;");
+Bool loadruntimemisc(JNIEnv *p_env) {
+	s_rt_externalstring_class = p_env->FindClass("Lcom/quartam/external/ExternalString;");
 	if (s_rt_externalstring_class == NULL) {
 		s_ext_exception = "qrtjvmerr: could not find class 'com.quartam.external.ExternalString'";
 		return False;
 	}
-	s_rt_externalstring_init_MID = s_rt_env->GetMethodID(s_rt_externalstring_class, "<init>", "([B)V");
+	s_rt_externalstring_init_MID = p_env->GetMethodID(s_rt_externalstring_class, "<init>", "([B)V");
 	if (s_rt_externalstring_init_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalString class (missing byte[] constructor)";
 		return False;
 	}
-	s_rt_externalstring_getbytes_MID = s_rt_env->GetMethodID(s_rt_externalstring_class, "getBytes", "()[B");
+	s_rt_externalstring_getbytes_MID = p_env->GetMethodID(s_rt_externalstring_class, "getBytes", "()[B");
 	if (s_rt_externalstring_getbytes_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalString class (missing getBytes method)";
 		return False;
 	}
-	s_rt_externalstring_getlength_MID = s_rt_env->GetMethodID(s_rt_externalstring_class, "getLength", "()I");
+	s_rt_externalstring_getlength_MID = p_env->GetMethodID(s_rt_externalstring_class, "getLength", "()I");
 	if (s_rt_externalstring_getlength_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalString class (missing getLength method)";
 		return False;
 	}
-	s_rt_string_class = s_rt_env->FindClass("Ljava/lang/String;");
-	s_rt_hashmap_class = s_rt_env->FindClass("Ljava/util/HashMap;");
-	s_rt_hashmap_init_MID = s_rt_env->GetMethodID(s_rt_hashmap_class, "<init>", "()V");
-	s_rt_hashmap_put_MID = s_rt_env->GetMethodID(s_rt_hashmap_class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+	s_rt_string_class = p_env->FindClass("Ljava/lang/String;");
+	s_rt_hashmap_class = p_env->FindClass("Ljava/util/HashMap;");
+	s_rt_hashmap_init_MID = p_env->GetMethodID(s_rt_hashmap_class, "<init>", "()V");
+	s_rt_hashmap_put_MID = p_env->GetMethodID(s_rt_hashmap_class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 	return True;
 }
 
-void unloadruntimemisc() {
-	s_rt_env->DeleteGlobalRef(s_rt_externalstring_class);
-	s_rt_env->DeleteGlobalRef(s_rt_string_class);
-	s_rt_env->DeleteGlobalRef(s_rt_hashmap_class);
+void unloadruntimemisc(JNIEnv *p_env) {
+	p_env->DeleteGlobalRef(s_rt_externalstring_class);
+	p_env->DeleteGlobalRef(s_rt_string_class);
+	p_env->DeleteGlobalRef(s_rt_hashmap_class);
 }
 
-Bool loadexternalhost() {
+Bool loadexternalhost(JNIEnv *p_env) {
 	char *classname = "com/quartam/internal/ExternalHost";
-	s_eh_class = s_rt_env->FindClass(classname);
+	s_eh_class = p_env->FindClass(classname);
 	if (s_eh_class == NULL) {
 		s_ext_exception = "qrtjvmerr: could not find class 'com.quartam.internal.ExternalHost'";
 		return False;
@@ -463,52 +462,52 @@ Bool loadexternalhost() {
 	char *t_signature;
 	t_signature = (char *)malloc(t_signature_length);
 	sprintf(t_signature, "%s%s%s", "()L", classname, ";");
-	s_eh_getInstance_MID = s_rt_env->GetStaticMethodID(s_eh_class, "getInstance", t_signature);
+	s_eh_getInstance_MID = p_env->GetStaticMethodID(s_eh_class, "getInstance", t_signature);
 	if (s_eh_getInstance_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing static getInstance method)";
 		return False;
 	}
-	s_eh_getExceptionText_MID = s_rt_env->GetStaticMethodID(s_eh_class, "getExceptionText", "(Ljava/lang/Throwable;)Ljava/lang/String;");
+	s_eh_getExceptionText_MID = p_env->GetStaticMethodID(s_eh_class, "getExceptionText", "(Ljava/lang/Throwable;)Ljava/lang/String;");
 	if (s_eh_getExceptionText_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing static getExceptionText method)";
 		return False;
 	}
-	s_eh_loadExternalLibrary_MID = s_rt_env->GetMethodID(s_eh_class, "loadExternalLibrary", "(Ljava/lang/String;)V");
+	s_eh_loadExternalLibrary_MID = p_env->GetMethodID(s_eh_class, "loadExternalLibrary", "(Ljava/lang/String;)V");
 	if (s_eh_loadExternalLibrary_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing loadExternalLibrary method)";
 		return False;
 	}
-	s_eh_unloadExternalLibrary_MID = s_rt_env->GetMethodID(s_eh_class, "unloadExternalLibrary", "(Ljava/lang/String;)V");
+	s_eh_unloadExternalLibrary_MID = p_env->GetMethodID(s_eh_class, "unloadExternalLibrary", "(Ljava/lang/String;)V");
 	if (s_eh_unloadExternalLibrary_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing unloadExternalLibrary method)";
 		return False;
 	}
-	s_eh_getExternalLibraries_MID = s_rt_env->GetMethodID(s_eh_class, "getExternalLibraries", "()Ljava/lang/String;");
+	s_eh_getExternalLibraries_MID = p_env->GetMethodID(s_eh_class, "getExternalLibraries", "()Ljava/lang/String;");
 	if (s_eh_getExternalLibraries_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing getExternalLibraries method)";
 		return False;
 	}
-	s_eh_getExternalPackages_MID = s_rt_env->GetMethodID(s_eh_class, "getExternalPackages", "()Ljava/lang/String;");
+	s_eh_getExternalPackages_MID = p_env->GetMethodID(s_eh_class, "getExternalPackages", "()Ljava/lang/String;");
 	if (s_eh_getExternalPackages_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing getExternalPackages method)";
 		return False;
 	}
-	s_eh_getExternalCommands_MID = s_rt_env->GetMethodID(s_eh_class, "getExternalCommands", "()Ljava/lang/String;");
+	s_eh_getExternalCommands_MID = p_env->GetMethodID(s_eh_class, "getExternalCommands", "()Ljava/lang/String;");
 	if (s_eh_getExternalCommands_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing getExternalCommands method)";
 		return False;
 	}
-	s_eh_getExternalFunctions_MID = s_rt_env->GetMethodID(s_eh_class, "getExternalFunctions", "()Ljava/lang/String;");
+	s_eh_getExternalFunctions_MID = p_env->GetMethodID(s_eh_class, "getExternalFunctions", "()Ljava/lang/String;");
 	if (s_eh_getExternalFunctions_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing getExternalFunctions method)";
 		return False;
 	}
-	s_eh_callExternalCommand_MID = s_rt_env->GetMethodID(s_eh_class, "callExternalCommand", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
+	s_eh_callExternalCommand_MID = p_env->GetMethodID(s_eh_class, "callExternalCommand", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
 	if (s_eh_callExternalCommand_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing callExternalCommand method)";
 		return False;
 	}
-	s_eh_callExternalFunction_MID = s_rt_env->GetMethodID(s_eh_class, "callExternalFunction", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
+	s_eh_callExternalFunction_MID = p_env->GetMethodID(s_eh_class, "callExternalFunction", "(Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
 	if (s_eh_callExternalCommand_MID == NULL) {
 		s_ext_exception = "qrtjvmerr: invalid ExternalHost class (missing callExternalFunction method)";
 		return False;
@@ -536,14 +535,14 @@ Bool loadexternalhost() {
 		{ "externalShowImageByNum", "(Ljava/lang/String;I)I", (void *)&externalShowImageByNum_impl },
 		{ "externalShowImageById", "(Ljava/lang/String;J)I", (void *)&externalShowImageById_impl },
 	};
-	s_rt_env->RegisterNatives(s_eh_class, externalMethods, 19);
+	p_env->RegisterNatives(s_eh_class, externalMethods, 19);
 	return True;
 }
 
-void unloadexternalhost() {
-	s_rt_env->DeleteGlobalRef(s_eh_object);
-	s_rt_env->UnregisterNatives(s_eh_class);
-	s_rt_env->DeleteGlobalRef(s_eh_class);
+void unloadexternalhost(JNIEnv *p_env) {
+	p_env->DeleteGlobalRef(s_eh_object);
+	p_env->UnregisterNatives(s_eh_class);
+	p_env->DeleteGlobalRef(s_eh_class);
 }
 
 //-----------------------------------------------------------------------------
@@ -598,7 +597,11 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 	vm_args.options = options;
 	vm_args.ignoreUnrecognized = JNI_FALSE;
 	vm_args.version = JNI_VERSION_1_4;
-    
+
+	// Load the JVM as prescribed by the target platform
+	//
+	JNIEnv * t_env;
+
 	#ifdef __APPLE__
 
 		CFStringRef targetJVM = CFSTR("1.5");
@@ -649,7 +652,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 		//
 		JNI_GetDefaultJavaVMInitArgs(&vm_args);
 		jint jvm_result = -1;
-		jvm_result = JNI_CreateJavaVM(&s_rt_jvm, (void**)&s_rt_env, &vm_args);
+		jvm_result = JNI_CreateJavaVM(&s_rt_jvm, (void**)&t_env, &vm_args);
 		if (jvm_result < 0) {
 			*r_pass = False;
 			*r_error = True;
@@ -699,7 +702,7 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 		//
 		pfnGetDefaultJavaVMInitArgs(&vm_args);
 		jint jvm_result = -1;
-		jvm_result = pfnCreateJavaVM(&s_rt_jvm, &s_rt_env, &vm_args);
+		jvm_result = pfnCreateJavaVM(&s_rt_jvm, &t_env, &vm_args);
 		if (jvm_result < 0) {
 			*r_pass = False;
 			*r_error = True;
@@ -714,14 +717,14 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 	// Next load our runtime miscellanea and ExternalHost class
 	//
 	Bool t_success;
-	t_success = loadruntimemisc();
+	t_success = loadruntimemisc(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
 		*r_result = strdup(s_ext_exception);
 		return;
 	}
-	t_success = loadexternalhost();
+	t_success = loadexternalhost(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -730,14 +733,14 @@ void qrtJVM_LoadJvm(char *p_arguments[], int p_argument_count, char **r_result, 
 	}
     
 	// Finally load our ExternalHost Instance
-	s_eh_object = s_rt_env->CallStaticObjectMethod(s_eh_class, s_eh_getInstance_MID);
+	s_eh_object = t_env->CallStaticObjectMethod(s_eh_class, s_eh_getInstance_MID);
 	if (s_eh_object == NULL) {
 		*r_pass = False;
 		*r_error = True;
 		*r_result = strdup("qrtjvmerr: could not create ExternalHost instance object");
 		return;
 	}
-	s_eh_object = s_rt_env->NewGlobalRef(s_eh_object);
+	s_eh_object = t_env->NewGlobalRef(s_eh_object);
 	if (s_eh_object == NULL) {
 		*r_pass = False;
 		*r_error = True;
@@ -796,15 +799,19 @@ void qrtJVM_UnloadJvm(char *p_arguments[], int p_argument_count, char **r_result
 	}
     
 	s_jvm_status = 3;  // unloading
-    
+
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
+	
 	// Start by cleaning up global references
 	//
-	unloadexternalhost();
-	unloadruntimemisc();
+	unloadexternalhost(t_env);
+	unloadruntimemisc(t_env);
     
 	// Now go ahead and destroy the JavaVM
 	jint jvm_result = -1;
-    //	jvm_result = JNI_DestroyJavaVM(&s_rt_jvm);
 	jvm_result = s_rt_jvm->DestroyJavaVM();
 	if (jvm_result < 0) {
 		*r_pass = False;
@@ -947,16 +954,21 @@ void qrtJVM_LoadXlib(char *p_arguments[], int p_argument_count, char **r_result,
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected <library path>)");
 		return;
 	}
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
 	// Now go ahead and try to load the external library into the jvm
 	//
-	jstring t_xlibpath = s_rt_env->NewStringUTF(p_arguments[0]);
-	s_rt_env->CallVoidMethod(s_eh_object, s_eh_loadExternalLibrary_MID, t_xlibpath);
+	jstring t_xlibpath = t_env->NewStringUTF(p_arguments[0]);
+	t_env->CallVoidMethod(s_eh_object, s_eh_loadExternalLibrary_MID, t_xlibpath);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -998,16 +1010,21 @@ void qrtJVM_UnloadXlib(char *p_arguments[], int p_argument_count, char **r_resul
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected <library path>)");
 		return;
 	}
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
 	// Now go ahead and try to load the external library into the jvm
 	//
-	jstring t_xlibpath = s_rt_env->NewStringUTF(p_arguments[0]);
-	s_rt_env->CallVoidMethod(s_eh_object, s_eh_unloadExternalLibrary_MID, t_xlibpath);
+	jstring t_xlibpath = t_env->NewStringUTF(p_arguments[0]);
+	t_env->CallVoidMethod(s_eh_object, s_eh_unloadExternalLibrary_MID, t_xlibpath);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -1049,20 +1066,25 @@ void qrtJVM_LoadedXlibs(char *p_arguments[], int p_argument_count, char **r_resu
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected none)");
 		return;
 	}
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
 	// Now go ahead and call the getExternalLibraries method via JNI
 	//
-	jstring t_xlibs = (jstring) s_rt_env->CallObjectMethod(s_eh_object, s_eh_getExternalLibraries_MID);
-	*r_result = jstring2cstring(s_rt_env, t_xlibs);
+	jstring t_xlibs = (jstring) t_env->CallObjectMethod(s_eh_object, s_eh_getExternalLibraries_MID);
+	*r_result = jstring2cstring(t_env, t_xlibs);
     
 	// Don't forget to cleanup our resources
 	//
-	s_rt_env->DeleteLocalRef(t_xlibs);
+	t_env->DeleteLocalRef(t_xlibs);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -1103,20 +1125,25 @@ void qrtJVM_LoadedXpacks(char *p_arguments[], int p_argument_count, char **r_res
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected none)");
 		return;
 	}
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
 	// Now go ahead and call the getExternalPackages method via JNI
 	//
-	jstring t_xpacks = (jstring) s_rt_env->CallObjectMethod(s_eh_object, s_eh_getExternalPackages_MID);
-	*r_result = jstring2cstring(s_rt_env, t_xpacks);
+	jstring t_xpacks = (jstring) t_env->CallObjectMethod(s_eh_object, s_eh_getExternalPackages_MID);
+	*r_result = jstring2cstring(t_env, t_xpacks);
     
 	// Don't forget to cleanup our resources
 	//
-	s_rt_env->DeleteLocalRef(t_xpacks);
+	t_env->DeleteLocalRef(t_xpacks);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -1157,20 +1184,25 @@ void qrtJVM_LoadedXcmds(char *p_arguments[], int p_argument_count, char **r_resu
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected none)");
 		return;
 	}
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
 	// Now go ahead and call the getExternalCommands method via JNI
 	//
-	jstring t_xcmds = (jstring) s_rt_env->CallObjectMethod(s_eh_object, s_eh_getExternalCommands_MID);
-	*r_result = jstring2cstring(s_rt_env, t_xcmds);
+	jstring t_xcmds = (jstring) t_env->CallObjectMethod(s_eh_object, s_eh_getExternalCommands_MID);
+	*r_result = jstring2cstring(t_env, t_xcmds);
     
 	// Don't forget to cleanup our resources
 	//
-	s_rt_env->DeleteLocalRef(t_xcmds);
+	t_env->DeleteLocalRef(t_xcmds);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -1211,20 +1243,25 @@ void qrtJVM_LoadedXfcns(char *p_arguments[], int p_argument_count, char **r_resu
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected none)");
 		return;
 	}
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
     
 	// Now go ahead and call the getExternalFunctions method via JNI
 	//
-	jstring t_xfcns = (jstring) s_rt_env->CallObjectMethod(s_eh_object, s_eh_getExternalFunctions_MID);
-	*r_result = jstring2cstring(s_rt_env, t_xfcns);
+	jstring t_xfcns = (jstring) t_env->CallObjectMethod(s_eh_object, s_eh_getExternalFunctions_MID);
+	*r_result = jstring2cstring(t_env, t_xfcns);
     
 	// Don't forget to cleanup our resources
 	//
-	s_rt_env->DeleteLocalRef(t_xfcns);
+	t_env->DeleteLocalRef(t_xfcns);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -1266,32 +1303,40 @@ void qrtJVM_CallXcmd(char *p_arguments[], int p_argument_count, char **r_result,
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected <command name> [,<param>]*)");
 		return;
 	}
-	jstring t_commandname = s_rt_env->NewStringUTF(p_arguments[0]);
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
+
+	// Next convertt he command name to a jstring
+	//
+	jstring t_commandname = t_env->NewStringUTF(p_arguments[0]);
     
 	// Next convert the arguments into a jstring array
 	//
-	jobjectArray t_arguments = s_rt_env->NewObjectArray(p_argument_count - 1, s_rt_string_class, NULL);
+	jobjectArray t_arguments = t_env->NewObjectArray(p_argument_count - 1, s_rt_string_class, NULL);
 	for(int t_index = 1; t_index < p_argument_count; t_index++) {
-		jstring t_param = s_rt_env->NewStringUTF(p_arguments[t_index]);
-		s_rt_env->SetObjectArrayElement(t_arguments, t_index - 1, t_param);
+		jstring t_param = t_env->NewStringUTF(p_arguments[t_index]);
+		t_env->SetObjectArrayElement(t_arguments, t_index - 1, t_param);
 	}
     
 	// Now invoke the callExternalCommand method of the ExternalHost
 	//
-	jstring t_call_result = (jstring) s_rt_env->CallObjectMethod(s_eh_object, s_eh_callExternalCommand_MID, t_commandname, t_arguments);
+	jstring t_call_result = (jstring) t_env->CallObjectMethod(s_eh_object, s_eh_callExternalCommand_MID, t_commandname, t_arguments);
 	if (t_call_result != NULL) {
-		*r_result = jstring2cstring(s_rt_env, t_call_result);
+		*r_result = jstring2cstring(t_env, t_call_result);
 	}
     
 	// Don't forget to cleanup our resources
 	//
-	s_rt_env->DeleteLocalRef(t_arguments);
-	s_rt_env->DeleteLocalRef(t_call_result);
+	t_env->DeleteLocalRef(t_arguments);
+	t_env->DeleteLocalRef(t_call_result);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
@@ -1333,32 +1378,39 @@ void qrtJVM_CallXfcn(char *p_arguments[], int p_argument_count, char **r_result,
 		*r_result = strdup("qrtjvmerr: invalid number of parameters (expected <function name> [,<param>]*)");
 		return;
 	}
-	jstring t_functionname = s_rt_env->NewStringUTF(p_arguments[0]);
+	
+    // Fetch the right JNI environment for the current thread
+	//
+	JNIEnv * t_env;
+	s_rt_jvm->AttachCurrentThread((void **)&t_env, NULL);
+
+	// Next convert the function name to a jstring
+	jstring t_functionname = t_env->NewStringUTF(p_arguments[0]);
     
 	// Next convert the arguments into a jstring array
 	//
-	jobjectArray t_arguments = s_rt_env->NewObjectArray(p_argument_count - 1, s_rt_string_class, NULL);
+	jobjectArray t_arguments = t_env->NewObjectArray(p_argument_count - 1, s_rt_string_class, NULL);
 	for(int t_index = 1; t_index < p_argument_count; t_index++) {
-		jstring t_param = s_rt_env->NewStringUTF(p_arguments[t_index]);
-		s_rt_env->SetObjectArrayElement(t_arguments, t_index - 1, t_param);
+		jstring t_param = t_env->NewStringUTF(p_arguments[t_index]);
+		t_env->SetObjectArrayElement(t_arguments, t_index - 1, t_param);
 	}
     
 	// Now invoke the callExternalFunction method of the ExternalHost
 	//
-	jstring t_call_result = (jstring) s_rt_env->CallObjectMethod(s_eh_object, s_eh_callExternalFunction_MID, t_functionname, t_arguments);
+	jstring t_call_result = (jstring) t_env->CallObjectMethod(s_eh_object, s_eh_callExternalFunction_MID, t_functionname, t_arguments);
 	if (t_call_result != NULL) {
-		*r_result = jstring2cstring(s_rt_env, t_call_result);
+		*r_result = jstring2cstring(t_env, t_call_result);
 	}
     
 	// Don't forget to cleanup our resources
 	//
-	s_rt_env->DeleteLocalRef(t_arguments);
-	s_rt_env->DeleteLocalRef(t_call_result);
+	t_env->DeleteLocalRef(t_arguments);
+	t_env->DeleteLocalRef(t_call_result);
     
 	// Finally check for jvm exception and rethrow to livecode if applicable
 	//
 	Bool t_success;
-	t_success = check4exception();
+	t_success = check4exception(t_env);
 	if (!t_success) {
 		*r_pass = False;
 		*r_error = True;
