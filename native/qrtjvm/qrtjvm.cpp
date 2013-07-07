@@ -34,7 +34,12 @@
 	#include <sys/resource.h>
 #endif
 
-#include "external.h"
+#if defined(BUILD_ENV_XCODE_4)
+	#include "external.h"
+#else
+	#include <revolution/external.h>
+#endif
+
 #include "qrtjvm.h"
 
 static int s_jvm_status = 0;
