@@ -47,6 +47,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.quartam.external.ExternalAlias;
 import com.quartam.external.ExternalCommand;
 import com.quartam.external.ExternalException;
 import com.quartam.external.ExternalFunction;
@@ -285,7 +286,12 @@ public abstract class ExternalLoader {
 							}
 							xPackage.setDisposeMethod(method);
 						} else if (method.isAnnotationPresent(ExternalCommand.class)) {
-							String commandName = method.getName();
+							String commandName = null;
+							if (method.isAnnotationPresent(ExternalAlias.class)) {
+								commandName = method.getAnnotation(ExternalAlias.class).value();
+							} else {
+								commandName = method.getName();
+							}
 							// an XCMD can return either nothing or a String
 							if ((!returnType.equals(Void.TYPE)) && (!returnType.equals(String.class))) {
 								errorDescription = "ExternalCommand '" + commandName + "' has a return type other than 'void' or 'String'";
@@ -305,7 +311,12 @@ public abstract class ExternalLoader {
 							XCommand xCommand = new XCommand(commandName, packageObject, method, xParameterType, xReturnType);
 							xPackage.addXCommand(xCommand);
 						} else if (method.isAnnotationPresent(ExternalFunction.class)) {
-							String functionName = method.getName();
+							String functionName = null;
+							if (method.isAnnotationPresent(ExternalAlias.class)) {
+								functionName = method.getAnnotation(ExternalAlias.class).value();
+							} else {
+								functionName = method.getName();
+							}
 							// an XFCN must return a single String
 							if (!returnType.equals(String.class)) {
 								errorDescription = "ExternalFunction '" + functionName + "' has a return type other than 'String'";
