@@ -18,12 +18,14 @@
 
 #if defined(TARGET_PLATFORM_LINUX)
 	#include <jni.h>
+	#include <stdlib.h>
 	#include <dlfcn.h>
 	#define DLOPEN(dynlib) dlopen(dynlib, RTLD_NOW)
 	#define DLSYM dlsym
 	#define HMODULE void *
 #elif defined(TARGET_PLATFORM_WINDOWS)
 	#include <jni.h>
+	#include <stdlib.h>
 	#include <windows.h>
 	#define DLOPEN(dynlib) LoadLibrary(dynlib)
 	#define DLSYM GetProcAddress
