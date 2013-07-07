@@ -23,8 +23,8 @@
 		D5384ED41778E89300C49FCA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D5384ED61778E89300C49FCA /* qrtjvm-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "qrtjvm-Prefix.pch"; sourceTree = "<group>"; };
 		D5384EDC1778E9FC00C49FCA /* JavaVM.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaVM.framework; path = System/Library/Frameworks/JavaVM.framework; sourceTree = SDKROOT; };
-		D5B0CD961789FEC6008665A1 /* qrtjvm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qrtjvm.cpp; path = src/qrtjvm.cpp; sourceTree = "<group>"; };
-		D5B0CD971789FEC6008665A1 /* qrtjvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qrtjvm.h; path = src/qrtjvm.h; sourceTree = "<group>"; };
+		D5B0CD961789FEC6008665A1 /* qrtjvm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qrtjvm.cpp; path = src/qrtjvm.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		D5B0CD971789FEC6008665A1 /* qrtjvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qrtjvm.h; path = src/qrtjvm.h; sourceTree = "<group>"; usesTabs = 1; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
